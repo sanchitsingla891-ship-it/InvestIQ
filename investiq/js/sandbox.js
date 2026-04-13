@@ -55,6 +55,27 @@ function toggleSandbox() {
     STATE.sandboxRunning = true;
     btn.textContent = 'Stop Simulation';
     btn.className = 'btn btn-sm btn-danger';
+    
+    // Connect to Backend WebSocket for REAL-TIME prices
+    API.onLivePrices((pricesData) => {
+       if(!STATE.sandboxRunning) return;
+       // pricesData has format: [{symbol: 'AAPL', currentPrice: 150}, ...]
+       // Map to our local array if needed, but since our STOCKS array has NIFTY we'll override STOCKS dynamically
+       if(pricesData && pricesData.length) {
+         pricesData.forEach(p => {
+           const existing = STOCKS.find(s => s.symbol === p.symbol);
+           if(existing) {
+             stockPrices[existing.id] = p.currentPrice || p.c || stockPrices[existing.id];
+           } else {
+             // Add new symbol dynamically if backend sends Finnhub stocks
+             const newId = p.symbol.toLowerCase();
+             STOCKS.push({ id: newId, symbol: p.symbol, name: p.symbol + ' Stock', price: p.currentPrice || p.c || 100 });
+             stockPrices[newId] = p.currentPrice || p.c || 100;
+           }
+         });
+       }
+    });
+
     sbInterval = setInterval(sandboxTick, 1800);
   } else {
     STATE.sandboxRunning = false;
@@ -72,8 +93,9 @@ function sandboxTick() {
   sbSeconds++;
   document.getElementById('sb-timer-label').textContent = 'Day ' + sbSeconds + ' — Live simulation';
 
+  // Even with WebSockets, add a little visual drift ticking so charts look alive between 5-second WS flashes
   STOCKS.forEach(s => {
-    const drift = (Math.random() - 0.49) * 0.016;
+    const drift = (Math.random() - 0.49) * 0.005; 
     stockPrices[s.id] = Math.max(stockPrices[s.id] * (1 + drift), 5);
   });
 
@@ -138,37 +160,52 @@ function updateTradeTotal() {
   document.getElementById('trade-total').textContent = formatINR(qty * price);
 }
 
-function executeTrade(type) {
+async function executeTrade(type) {
   if (!STATE.selectedStock) return;
   const stock = STOCKS.find(s => s.id === STATE.selectedStock);
   const qty = parseInt(document.getElementById('trade-qty').value) || 1;
   const price = stockPrices[STATE.selectedStock];
   const total = qty * price;
 
-  if (type === 'buy') {
-    if (STATE.sandboxCash < total) { showToast('Insufficient cash!', 'error'); return; }
-    showLossProbModal(STATE.selectedStock);
-    STATE.sandboxCash -= total;
-    if (!STATE.sandboxHoldings[STATE.selectedStock]) {
-      STATE.sandboxHoldings[STATE.selectedStock] = { qty: 0, avgPrice: price, stock };
-    }
-    STATE.sandboxHoldings[STATE.selectedStock].qty += qty;
-    showToast(`Bought ${qty} × ${stock.symbol} @ ₹${price.toFixed(0)}`, 'success');
-  } else {
-    const held = STATE.sandboxHoldings[STATE.selectedStock];
-    if (!held || held.qty < qty) { showToast('Not enough shares held.', 'error'); return; }
-    STATE.sandboxCash += total;
-    held.qty -= qty;
-    if (held.qty === 0) delete STATE.sandboxHoldings[STATE.selectedStock];
-    const drop = (100000 - STATE.sandboxPortfolio) / 100000 * 100;
-    if (drop > 10) {
-      STATE.disciplineScore = Math.max(0, STATE.disciplineScore - 8);
-      STATE.userDecisions.push({ type: 'sell_dip', drop: drop.toFixed(0), portVal: Math.round(STATE.sandboxPortfolio) });
-      showToast('Sold during a dip — discipline −8', 'warn');
+  try {
+    // Synchronize over API
+    if (type === 'buy') {
+      if (STATE.sandboxCash < total) { showToast('Insufficient cash!', 'error'); return; }
+      showLossProbModal(STATE.selectedStock);
+      
+      const res = await API.buyAsset(stock.symbol, qty); // BACKEND CALL
+      
+      STATE.sandboxCash = res.portfolio.balance;
+      if (!STATE.sandboxHoldings[STATE.selectedStock]) {
+        STATE.sandboxHoldings[STATE.selectedStock] = { qty: 0, avgPrice: price, stock };
+      }
+      STATE.sandboxHoldings[STATE.selectedStock].qty += qty;
+      showToast(`Bought ${qty} × ${stock.symbol} @ ₹${price.toFixed(0)}`, 'success');
     } else {
-      showToast(`Sold ${qty} × ${stock.symbol} @ ₹${price.toFixed(0)}`, 'info');
+      const held = STATE.sandboxHoldings[STATE.selectedStock];
+      if (!held || held.qty < qty) { showToast('Not enough shares held.', 'error'); return; }
+      
+      const res = await API.sellAsset(stock.symbol, qty); // BACKEND CALL
+      
+      STATE.sandboxCash = res.portfolio.balance;
+      held.qty -= qty;
+      if (held.qty === 0) delete STATE.sandboxHoldings[STATE.selectedStock];
+      
+      const drop = (100000 - STATE.sandboxPortfolio) / 100000 * 100;
+      if (drop > 10) {
+        STATE.disciplineScore = Math.max(0, STATE.disciplineScore - 8);
+        STATE.userDecisions.push({ type: 'sell_dip', drop: drop.toFixed(0), portVal: Math.round(STATE.sandboxPortfolio) });
+        showToast('Sold during a dip — discipline −8', 'warn');
+        API.logDecision({ decisionType: 'sell_dip', symbol: stock.symbol, priceAtDecision: price, dropPct: drop });
+      } else {
+        showToast(`Sold ${qty} × ${stock.symbol} @ ₹${price.toFixed(0)}`, 'info');
+        API.logDecision({ decisionType: 'sell', symbol: stock.symbol, priceAtDecision: price });
+      }
     }
+  } catch (err) {
+    showToast(`Trade failed: ${err.message}`, 'error');
   }
+
   recalcPortfolio();
   updateSBStats();
   renderPriceGrid();

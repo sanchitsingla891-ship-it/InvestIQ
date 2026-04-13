@@ -57,7 +57,19 @@ function showOBResult() {
   document.getElementById('ob-result').classList.add('active');
 }
 
-function finishOnboarding() {
+async function finishOnboarding() {
   document.getElementById('onboarding').style.display = 'none';
+  
+  try {
+    // Send fear profile and biases to the backend
+    await API.updateProfile({
+      investorType: STATE.fearProfile,
+      biasScores: STATE.biasScores
+    });
+    console.log('[API] Profile successfully synced.');
+  } catch (err) {
+    console.error('Failed to sync profile', err);
+  }
+
   refreshDashboard();
 }

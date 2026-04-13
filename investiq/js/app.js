@@ -491,8 +491,23 @@ function downloadCertificate() {
 }
 
 // ── BOOT ────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  // Render default dashboard page
+window.addEventListener('DOMContentLoaded', async () => {
+  // 1. Ensure backend guest session exists
+  await initGuestAuth();
+
+  // 2. Try fetching backend progress & sync state
+  try {
+    const res = await API.getProgress();
+    if (res.success && res.progress) {
+      STATE.fearProfile = res.progress.investorType;
+      STATE.simulationsDone = res.progress.simulations.total || 0;
+      console.log('Backend state loaded.');
+    }
+  } catch (e) {
+    console.log('Working in offline/mock mode.');
+  }
+
+  // 3. Render default dashboard page
   document.getElementById('main-content').innerHTML = PAGE_TEMPLATES.dashboard();
   refreshDashboard();
 });
