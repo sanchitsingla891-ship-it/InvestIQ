@@ -1,3 +1,4 @@
+
 // js/sandbox.js — Live sandbox simulation
 
 let sbChart = null;
@@ -55,25 +56,25 @@ function toggleSandbox() {
     STATE.sandboxRunning = true;
     btn.textContent = 'Stop Simulation';
     btn.className = 'btn btn-sm btn-danger';
-    
+
     // Connect to Backend WebSocket for REAL-TIME prices
     API.onLivePrices((pricesData) => {
-       if(!STATE.sandboxRunning) return;
-       // pricesData has format: [{symbol: 'AAPL', currentPrice: 150}, ...]
-       // Map to our local array if needed, but since our STOCKS array has NIFTY we'll override STOCKS dynamically
-       if(pricesData && pricesData.length) {
-         pricesData.forEach(p => {
-           const existing = STOCKS.find(s => s.symbol === p.symbol);
-           if(existing) {
-             stockPrices[existing.id] = p.currentPrice || p.c || stockPrices[existing.id];
-           } else {
-             // Add new symbol dynamically if backend sends Finnhub stocks
-             const newId = p.symbol.toLowerCase();
-             STOCKS.push({ id: newId, symbol: p.symbol, name: p.symbol + ' Stock', price: p.currentPrice || p.c || 100 });
-             stockPrices[newId] = p.currentPrice || p.c || 100;
-           }
-         });
-       }
+      if (!STATE.sandboxRunning) return;
+      // pricesData has format: [{symbol: 'AAPL', currentPrice: 150}, ...]
+      // Map to our local array if needed, but since our STOCKS array has NIFTY we'll override STOCKS dynamically
+      if (pricesData && pricesData.length) {
+        pricesData.forEach(p => {
+          const existing = STOCKS.find(s => s.symbol === p.symbol);
+          if (existing) {
+            stockPrices[existing.id] = p.currentPrice || p.c || stockPrices[existing.id];
+          } else {
+            // Add new symbol dynamically if backend sends Finnhub stocks
+            const newId = p.symbol.toLowerCase();
+            STOCKS.push({ id: newId, symbol: p.symbol, name: p.symbol + ' Stock', price: p.currentPrice || p.c || 100 });
+            stockPrices[newId] = p.currentPrice || p.c || 100;
+          }
+        });
+      }
     });
 
     sbInterval = setInterval(sandboxTick, 1800);
@@ -95,7 +96,7 @@ function sandboxTick() {
 
   // Even with WebSockets, add a little visual drift ticking so charts look alive between 5-second WS flashes
   STOCKS.forEach(s => {
-    const drift = (Math.random() - 0.49) * 0.005; 
+    const drift = (Math.random() - 0.49) * 0.005;
     stockPrices[s.id] = Math.max(stockPrices[s.id] * (1 + drift), 5);
   });
 
@@ -172,9 +173,9 @@ async function executeTrade(type) {
     if (type === 'buy') {
       if (STATE.sandboxCash < total) { showToast('Insufficient cash!', 'error'); return; }
       showLossProbModal(STATE.selectedStock);
-      
+
       const res = await API.buyAsset(stock.symbol, qty); // BACKEND CALL
-      
+
       STATE.sandboxCash = res.portfolio.balance;
       if (!STATE.sandboxHoldings[STATE.selectedStock]) {
         STATE.sandboxHoldings[STATE.selectedStock] = { qty: 0, avgPrice: price, stock };
@@ -184,13 +185,13 @@ async function executeTrade(type) {
     } else {
       const held = STATE.sandboxHoldings[STATE.selectedStock];
       if (!held || held.qty < qty) { showToast('Not enough shares held.', 'error'); return; }
-      
+
       const res = await API.sellAsset(stock.symbol, qty); // BACKEND CALL
-      
+
       STATE.sandboxCash = res.portfolio.balance;
       held.qty -= qty;
       if (held.qty === 0) delete STATE.sandboxHoldings[STATE.selectedStock];
-      
+
       const drop = (100000 - STATE.sandboxPortfolio) / 100000 * 100;
       if (drop > 10) {
         STATE.disciplineScore = Math.max(0, STATE.disciplineScore - 8);

@@ -66,6 +66,12 @@ const API = {
   logDecision: (logParams) => apiCall('POST', '/behavior/log', logParams), // { sessionId, decisionType, symbol, priceAtDecision ... }
   getProgress: () => apiCall('GET', '/progress'),
   
+  // Recommendations / AI (Gemini Proxies)
+  generateFearQuestion: (biasTarget, previousQuestions) => apiCall('POST', '/recommendations/fear-question', { biasTarget, previousQuestions }),
+  generateDebrief: (sessionData) => apiCall('POST', '/recommendations/debrief', sessionData),
+  coachChat: (userMessage, context) => apiCall('POST', '/recommendations/coach-chat', { userMessage, context }),
+  analyzeClaim: (claimText) => apiCall('POST', '/recommendations/analyze-claim', { claimText }),
+
   // Websocket for live prices
   onLivePrices: (callback) => {
     if (WS_CONNECTION) return;
