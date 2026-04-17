@@ -11,14 +11,8 @@ investocoach-backend/
 ├── src/
 │   ├── app.js                      # Express entry point + WebSocket init
 │   ├── config/
-│   │   ├── db.js                   # MongoDB connection
+│   │   ├── supabase.js             # Supabase client (replaces MongoDB)
 │   │   └── logger.js               # Winston logger
-│   ├── models/
-│   │   ├── User.js                 # User profile + fear score
-│   │   ├── SimulationSession.js    # Simulation state + price history
-│   │   ├── BehaviorLog.js          # Per-decision tracking
-│   │   ├── Portfolio.js            # Sandbox portfolio
-│   │   └── MarketCache.js          # Persistent price cache (TTL)
 │   ├── middleware/
 │   │   ├── auth.js                 # JWT protect middleware
 │   │   ├── errorHandler.js         # Global error handler
@@ -227,9 +221,9 @@ Prices broadcast every **5 seconds**.
 
 - **Runtime**: Node.js
 - **Framework**: Express.js
-- **Database**: MongoDB + Mongoose
+- **Database**: Supabase (PostgreSQL)
 - **Auth**: JWT (jsonwebtoken + bcryptjs)
-- **Cache**: node-cache (in-memory) + MongoDB TTL
+- **Cache**: node-cache (in-memory)
 - **Market Data**: Finnhub REST API
 - **Real-time**: WebSocket (ws)
 - **Logging**: Winston

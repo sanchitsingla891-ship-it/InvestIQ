@@ -27,6 +27,34 @@ async function sendChatMessage() {
     });
     loadingEl.textContent = response;
     loadingEl.classList.remove('loading');
+    
+    // Check for Knowledge Book recommendations
+    const responseLower = response.toLowerCase();
+    const userMsgLower = msg.toLowerCase();
+    const recommendation = VARSITY_MODULES.find(m => 
+      responseLower.includes(m.id) || 
+      userMsgLower.includes(m.id) || 
+      (m.id === 'intro' && (userMsgLower.includes('how to start') || userMsgLower.includes('new to market'))) ||
+      (m.id === 'innerworth' && (userMsgLower.includes('scared') || userMsgLower.includes('panic') || userMsgLower.includes('fear')))
+    );
+
+    if (recommendation) {
+      const recEl = document.createElement('div');
+      recEl.className = 'chat-rec-link';
+      recEl.innerHTML = `
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;">Recommended Reading</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">${recommendation.icon}</span>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:600;">${recommendation.title}</div>
+            <div style="font-size:10px;color:var(--text2);">Zerodha Varsity Module</div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="padding:4px 8px;font-size:10px;" onclick="window.open('${recommendation.link}','_blank')">Read</button>
+        </div>
+      `;
+      const msgs = document.getElementById('chat-messages');
+      msgs.appendChild(recEl);
+    }
   } catch (e) {
     // Fallback to demo responses
     await new Promise(r => setTimeout(r, 600));

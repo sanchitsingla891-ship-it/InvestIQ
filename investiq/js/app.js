@@ -245,6 +245,22 @@ const PAGE_TEMPLATES = {
         </div>
       </div>
       <div id="grad-card-area"></div>
+    </div>`,
+  
+  knowledge: () => `
+    <div class="page active" id="page-knowledge">
+      <div class="page-title">Knowledge Book</div>
+      <div class="page-sub">Master the markets with curated modules from Zerodha Varsity. Structured learning for the disciplined investor.</div>
+      <div class="knowledge-search mb-20">
+        <input type="text" id="varsity-search-input" placeholder="Search for any topic (e.g. 'PE Ratio', 'SIP', 'Risk')..." onkeydown="if(event.key==='Enter')searchVarsity()"/>
+        <button class="btn btn-primary btn-sm" onclick="searchVarsity()">Search Varsity</button>
+      </div>
+      <div class="knowledge-grid" id="knowledge-grid"></div>
+      <div style="margin-top:24px;padding:20px;background:var(--bg3);border-radius:12px;text-align:center;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px;">Haven't found what you're looking for?</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">Access the complete financial library directly on the Varsity platform.</div>
+        <button class="btn btn-secondary btn-sm" onclick="window.open('https://zerodha.com/varsity/','_blank')">Explore All Modules →</button>
+      </div>
     </div>`
 };
 
@@ -264,6 +280,7 @@ function showPage(id, navItem) {
   if (id === 'crash')      requestAnimationFrame(() => { renderCrashSelector(); });
   if (id === 'debrief')    refreshDebrief();
   if (id === 'graduation') refreshGraduation();
+  if (id === 'knowledge')  refreshKnowledge();
 }
 
 function navToPage(id) {
@@ -488,6 +505,32 @@ function downloadCertificate() {
   a.href = url; a.download = 'InvestIQ_Certificate.txt';
   a.click(); URL.revokeObjectURL(url);
   showToast('Certificate downloaded!', 'success');
+}
+
+// ── KNOWLEDGE BOOK ──────────────────────────────────────
+function refreshKnowledge() {
+  const grid = document.getElementById('knowledge-grid');
+  if (!grid) return;
+
+  grid.innerHTML = VARSITY_MODULES.map(m => `
+    <div class="k-card">
+      <div class="k-icon">${m.icon}</div>
+      <div class="k-badge">${m.level}</div>
+      <div class="k-title">${m.title}</div>
+      <div class="k-desc">${m.desc}</div>
+      <div class="k-footer">
+        <span class="k-chapters">${m.chapters} Chapters</span>
+        <button class="btn btn-primary btn-sm" style="padding:6px 12px;font-size:11px;" onclick="window.open('${m.link}','_blank')">Read Module</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function searchVarsity() {
+  const input = document.getElementById('varsity-search-input');
+  const query = input.value.trim();
+  if (!query) return;
+  window.open(SEARCH_BASE_URL + encodeURIComponent(query), '_blank');
 }
 
 // ── BOOT ────────────────────────────────────────────────

@@ -85,6 +85,8 @@
 .chat-msg.user{background:rgba(124,106,247,.2);color:var(--text);align-self:flex-end;border-bottom-right-radius:4px;}
 .chat-msg.ai{background:var(--bg3);color:var(--text2);align-self:flex-start;border-bottom-left-radius:4px;}
 .chat-msg.loading{color:var(--text3);font-style:italic;}
+.chat-rec-link{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;margin:10px 16px;animation:slideUp .3s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 .chat-input-row{padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;}
 .chat-input-row input{flex:1;}
 .chat-lang{display:flex;gap:6px;}
@@ -116,3 +118,79 @@
 .grad-sip{background:var(--green-bg);border:1px solid rgba(34,217,138,.25);border-radius:12px;padding:14px;margin-bottom:16px;}
 .sip-title{font-size:12px;color:var(--green);font-weight:600;margin-bottom:4px;}
 .sip-detail{font-size:13px;color:var(--text);}
+
+/* KNOWLEDGE BOOK */
+.knowledge-search {
+  display: flex;
+  gap: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 12px;
+}
+.knowledge-search input {
+  flex: 1;
+}
+.knowledge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.k-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.k-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.k-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+.k-badge {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--bg3);
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.k-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.k-desc {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  flex: 1;
+}
+.k-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.k-chapters {
+  font-size: 11px;
+  color: var(--text3);
+}
