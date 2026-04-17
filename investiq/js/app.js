@@ -544,10 +544,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (res.success && res.progress) {
       STATE.fearProfile = res.progress.investorType;
       STATE.simulationsDone = res.progress.simulations.total || 0;
-      console.log('Backend state loaded.');
     }
   } catch (e) {
-    console.log('Working in offline/mock mode.');
+
   }
 
   // 3. Render default dashboard page

@@ -66,7 +66,7 @@ async function finishOnboarding() {
       investorType: STATE.fearProfile,
       biasScores: STATE.biasScores
     });
-    console.log('[API] Profile successfully synced.');
+
   } catch (err) {
     console.error('Failed to sync profile', err);
   }

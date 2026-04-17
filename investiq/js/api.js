@@ -42,7 +42,7 @@ const initGuestAuth = async () => {
     
     AUTH_TOKEN = data.token;
     localStorage.setItem('investiq_token', AUTH_TOKEN);
-    console.log('[API] Guest authenticated successfully:', data.user.id);
+
     return true;
   } catch (err) {
     console.error('Guest auth failed', err);
@@ -78,7 +78,7 @@ const API = {
     const wsUrl = API_BASE_URL.replace('http', 'ws');
     WS_CONNECTION = new WebSocket(wsUrl);
     
-    WS_CONNECTION.onopen = () => console.log('[WG] Live prices connected');
+    WS_CONNECTION.onopen = () => {};
     WS_CONNECTION.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);

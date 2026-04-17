@@ -1,0 +1,5 @@
+# Root-level ignore — all code lives in investiq/ and investocoach-backend/
+node_modules/
+.env
+*.log
+.DS_Store
