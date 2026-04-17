@@ -191,7 +191,7 @@ async function executeTrade(type) {
 
       const res = await API.buyAsset(stock.symbol, qty); // BACKEND CALL
 
-      STATE.sandboxCash = res.portfolio.balance;
+      STATE.sandboxCash = res.newCashBalance ?? (STATE.sandboxCash - total);
       if (!STATE.sandboxHoldings[STATE.selectedStock]) {
         STATE.sandboxHoldings[STATE.selectedStock] = { qty: 0, avgPrice: price, stock };
       }
@@ -203,7 +203,7 @@ async function executeTrade(type) {
 
       const res = await API.sellAsset(stock.symbol, qty); // BACKEND CALL
 
-      STATE.sandboxCash = res.portfolio.balance;
+      STATE.sandboxCash = res.newCashBalance ?? (STATE.sandboxCash + total);
       held.qty -= qty;
       if (held.qty === 0) delete STATE.sandboxHoldings[STATE.selectedStock];
 
@@ -300,7 +300,7 @@ function buildCheckpointChoices(callbackName) {
   ).join('');
 }
 
-function resetSandbox() {
+async function resetSandbox() {
   clearInterval(sbInterval);
   STATE.sandboxRunning = false;
   STATE.sandboxPortfolio = 100000;
@@ -308,8 +308,16 @@ function resetSandbox() {
   STATE.sandboxHoldings = {};
   STATE.checkpointsShown = { 10: false, 20: false, 30: false };
   STATE.selectedStock = null;
-  STOCKS.forEach(s => { stockPrices[s.id] = s.price; });
   sbSeconds = 0;
+
+  // Create fresh guest session so backend portfolio resets to ₹1,00,000
+  localStorage.removeItem('investiq_token');
+  AUTH_TOKEN = null;
+  await initGuestAuth();
+
+  // Re-fetch real prices
+  await fetchRealPrices();
+
   const btn = document.getElementById('sb-toggle-btn');
   if (btn) { btn.textContent = 'Start Simulation'; btn.className = 'btn btn-sm btn-primary'; }
   const label = document.getElementById('sb-timer-label');
@@ -320,5 +328,5 @@ function resetSandbox() {
   renderPriceGrid();
   updateHoldingsPanel();
   initSBChart();
-  showToast('Sandbox reset.', 'info');
+  showToast('Sandbox reset with fresh ₹1,00,000 portfolio.', 'info');
 }

@@ -15,7 +15,7 @@ const getOrCreatePortfolio = async (userId) => {
 
   const { data: created } = await supabase
     .from('portfolios')
-    .insert({ user_id: userId, cash_balance: Number(process.env.DEFAULT_PORTFOLIO_AMOUNT) || 10000 })
+    .insert({ user_id: userId, cash_balance: Number(process.env.DEFAULT_PORTFOLIO_AMOUNT) || 100000 })
     .select()
     .single();
 
