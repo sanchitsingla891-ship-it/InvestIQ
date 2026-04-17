@@ -56,6 +56,8 @@ const API = {
   // Live market prices (public — no auth required)
   getSandboxPrices: () => apiCall('GET', '/market/sandbox-prices'),
 
+  googleSignIn: (credential) => apiCall('POST', '/auth/google', { credential }),
+
   // Sync boarding fear profile
   updateProfile: (profileData) => apiCall('PATCH', '/user/profile', profileData),
   

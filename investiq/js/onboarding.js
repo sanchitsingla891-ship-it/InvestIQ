@@ -73,3 +73,23 @@ async function finishOnboarding() {
 
   refreshDashboard();
 }
+
+// ── GOOGLE SIGN-IN HANDLER ────────────────────────────────────────────────────
+async function handleGoogleSignIn(response) {
+  try {
+    const res = await API.googleSignIn(response.credential);
+    
+    AUTH_TOKEN = res.token;
+    localStorage.setItem('investiq_token', AUTH_TOKEN);
+    
+    showToast('Signed in with Google successfully!', 'success');
+    
+    // Hide onboarding and go straight to dashboard
+    document.getElementById('onboarding').style.display = 'none';
+    refreshDashboard();
+  } catch (err) {
+    showToast('Google Sign In failed. Try again.', 'error');
+    console.error('SSO Error:', err);
+  }
+}
+

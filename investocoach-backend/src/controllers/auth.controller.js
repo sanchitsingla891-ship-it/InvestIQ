@@ -3,6 +3,10 @@
 const jwt      = require('jsonwebtoken');
 const bcrypt   = require('bcryptjs');
 const supabase = require('../config/supabase');
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
@@ -99,4 +103,69 @@ const login = async (req, res) => {
   res.json({ success: true, message: 'Login successful', token, user: safeUser });
 };
 
-module.exports = { signup, login, deriveInvestorType };
+const googleAuth = async (req, res) => {
+  const { credential } = req.body;
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+
+    // Check if user exists by email
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id, name, email, fear_score, investor_type, risk_preference, is_active')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (existingUser) {
+      if (!existingUser.is_active) {
+        return res.status(401).json({ success: false, message: 'Account deactivated' });
+      }
+      const token = signToken(existingUser.id);
+      return res.json({ success: true, message: 'Login successful', token, user: existingUser });
+    }
+
+    // Insert new user
+    const salt = await bcrypt.genSalt(12);
+    const passwordHash = await bcrypt.hash(Math.random().toString(36), salt);
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .insert({
+        name,
+        email,
+        password_hash: passwordHash,
+        risk_preference: 'low',
+        investor_type: 'Beginner',
+        fear_score: 50,
+      })
+      .select('id, name, email, fear_score, investor_type, risk_preference')
+      .single();
+
+    if (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+
+    // Bootstrap sandbox portfolio
+    await supabase.from('portfolios').insert({
+      user_id: user.id,
+      cash_balance: Number(process.env.DEFAULT_PORTFOLIO_AMOUNT) || 100000,
+    });
+
+    const token = signToken(user.id);
+    return res.status(201).json({
+      success: true,
+      message: 'Account created successfully',
+      token,
+      user,
+    });
+  } catch (err) {
+    return res.status(401).json({ success: false, message: 'Invalid Google token' });
+  }
+};
+
+module.exports = { signup, login, googleAuth, deriveInvestorType };

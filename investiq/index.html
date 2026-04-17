@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async></script>
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/pages.css">
@@ -28,7 +29,27 @@
             InvestIQ fixes that — behavioral science, crash simulations, and Gemini AI coaching. Zero real money. Real emotional training.
           </div>
         </div>
-        <button class="btn btn-primary" onclick="nextObStep(1)" style="width:100%;justify-content:center;padding:14px;font-size:14px;">Start Fear Assessment →</button>
+        <button class="btn btn-primary" onclick="nextObStep(1)" style="width:100%;justify-content:center;padding:14px;font-size:14px;margin-bottom:16px;">Continue as Guest →</button>
+        
+        <!-- Google Sign-In elements -->
+        <div id="g_id_onload"
+             data-client_id="840743131282-ceeah5c9fburjiukoqlj59cqscqin831.apps.googleusercontent.com"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleGoogleSignIn"
+             data-auto_prompt="false">
+        </div>
+
+        <div style="display:flex; justify-content:center;">
+          <div class="g_id_signin"
+               data-type="standard"
+               data-shape="pill"
+               data-theme="outline"
+               data-text="signin_with"
+               data-size="large"
+               data-logo_alignment="left">
+          </div>
+        </div>
       </div>
     </div>
     <div class="ob-step" id="ob-1">
