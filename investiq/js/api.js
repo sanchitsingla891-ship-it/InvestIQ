@@ -53,6 +53,9 @@ const initGuestAuth = async () => {
 // ── API ENDPOINTS EXPOSED TO FRONTEND ─────────────────────────────────────────
 
 const API = {
+  // Live market prices (public — no auth required)
+  getSandboxPrices: () => apiCall('GET', '/market/sandbox-prices'),
+
   // Sync boarding fear profile
   updateProfile: (profileData) => apiCall('PATCH', '/user/profile', profileData),
   

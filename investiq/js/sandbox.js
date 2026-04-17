@@ -5,11 +5,33 @@ let sbChart = null;
 let sbInterval = null;
 let sbSeconds = 0;
 let stockPrices = {};
+let realPricesLoaded = false;
 
-// Initialise prices from data
+// Initialise prices from static fallback data
 STOCKS.forEach(s => { stockPrices[s.id] = s.price; });
 
-function initSandbox() {
+// Fetch real-time NSE prices from backend (Yahoo Finance)
+async function fetchRealPrices() {
+  try {
+    const res = await API.getSandboxPrices();
+    if (res.success && res.prices && res.prices.length) {
+      res.prices.forEach(p => {
+        const stock = STOCKS.find(s => s.symbol === p.symbol);
+        if (stock) {
+          stockPrices[stock.id] = p.price;
+          stock.price = p.price; // Update base price for % change calc
+          stock.changePercent = p.changePercent || 0;
+        }
+      });
+      realPricesLoaded = true;
+    }
+  } catch (err) {
+    // Silently fall back to hardcoded prices
+  }
+}
+
+async function initSandbox() {
+  await fetchRealPrices();
   renderPriceGrid();
   initSBChart();
   updateSBStats();
@@ -60,18 +82,11 @@ function toggleSandbox() {
     // Connect to Backend WebSocket for REAL-TIME prices
     API.onLivePrices((pricesData) => {
       if (!STATE.sandboxRunning) return;
-      // pricesData has format: [{symbol: 'AAPL', currentPrice: 150}, ...]
-      // Map to our local array if needed, but since our STOCKS array has NIFTY we'll override STOCKS dynamically
       if (pricesData && pricesData.length) {
         pricesData.forEach(p => {
-          const existing = STOCKS.find(s => s.symbol === p.symbol);
-          if (existing) {
-            stockPrices[existing.id] = p.currentPrice || p.c || stockPrices[existing.id];
-          } else {
-            // Add new symbol dynamically if backend sends Finnhub stocks
-            const newId = p.symbol.toLowerCase();
-            STOCKS.push({ id: newId, symbol: p.symbol, name: p.symbol + ' Stock', price: p.currentPrice || p.c || 100 });
-            stockPrices[newId] = p.currentPrice || p.c || 100;
+          const stock = STOCKS.find(s => s.symbol === p.symbol);
+          if (stock && p.currentPrice) {
+            stockPrices[stock.id] = p.currentPrice;
           }
         });
       }

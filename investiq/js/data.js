@@ -92,16 +92,16 @@ const QUESTIONS = [
   }
 ];
 
-// ── STOCKS ──────────────────────────────────────────────
+// ── STOCKS (fallback prices — overwritten with real Yahoo Finance data on load) ──
 const STOCKS = [
-  { id: 'nifty',   name: 'Nifty 50 ETF',  symbol: 'NIFTYBEES', price: 220,  sector: 'Index'   },
-  { id: 'reli',    name: 'Reliance Ind.',  symbol: 'RELIANCE',  price: 2850, sector: 'Energy'  },
-  { id: 'tcs',     name: 'TCS',            symbol: 'TCS',       price: 3640, sector: 'IT'      },
-  { id: 'hdfc',    name: 'HDFC Bank',      symbol: 'HDFCBANK',  price: 1680, sector: 'Banking' },
-  { id: 'info',    name: 'Infosys',        symbol: 'INFY',      price: 1820, sector: 'IT'      },
-  { id: 'zomato',  name: 'Zomato',         symbol: 'ZOMATO',    price: 218,  sector: 'Tech'    },
-  { id: 'sbi',     name: 'SBI',            symbol: 'SBIN',      price: 780,  sector: 'Banking' },
-  { id: 'adani',   name: 'Adani Ports',    symbol: 'ADANIPORTS',price: 1290, sector: 'Infra'   }
+  { id: 'nifty',   name: 'Nifty 50 ETF',  symbol: 'NIFTYBEES', yahooSymbol: 'NIFTYBEES.NS', price: 220,  sector: 'Index'   },
+  { id: 'reli',    name: 'Reliance Ind.',  symbol: 'RELIANCE',  yahooSymbol: 'RELIANCE.NS',  price: 2850, sector: 'Energy'  },
+  { id: 'tcs',     name: 'TCS',            symbol: 'TCS',       yahooSymbol: 'TCS.NS',       price: 3640, sector: 'IT'      },
+  { id: 'hdfc',    name: 'HDFC Bank',      symbol: 'HDFCBANK',  yahooSymbol: 'HDFCBANK.NS',  price: 1680, sector: 'Banking' },
+  { id: 'info',    name: 'Infosys',        symbol: 'INFY',      yahooSymbol: 'INFY.NS',      price: 1820, sector: 'IT'      },
+  { id: 'zomato',  name: 'Zomato',         symbol: 'ZOMATO',    yahooSymbol: 'ETERNAL.NS',   price: 218,  sector: 'Tech'    },
+  { id: 'sbi',     name: 'SBI',            symbol: 'SBIN',      yahooSymbol: 'SBIN.NS',      price: 780,  sector: 'Banking' },
+  { id: 'adani',   name: 'Adani Ports',    symbol: 'ADANIPORTS',yahooSymbol: 'ADANIPORTS.NS',price: 1290, sector: 'Infra'   }
 ];
 
 // ── CRASH DATA ───────────────────────────────────────────

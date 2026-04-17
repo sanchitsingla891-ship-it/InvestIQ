@@ -1,7 +1,7 @@
 'use strict';
 
 const WebSocket = require('ws');
-const { getPrice, TRENDING_SYMBOLS } = require('./market.service');
+const { getSandboxPrices, SANDBOX_SYMBOLS } = require('./market.service');
 const logger = require('../config/logger');
 
 let wss = null;
@@ -9,7 +9,7 @@ let broadcastInterval = null;
 
 /**
  * Initialise WebSocket server on the same HTTP server.
- * Clients receive live (or cached) price ticks every 5 seconds.
+ * Clients receive real NSE stock prices every 5 seconds.
  */
 const initWebSocket = (httpServer) => {
   wss = new WebSocket.Server({ server: httpServer });
@@ -23,10 +23,8 @@ const initWebSocket = (httpServer) => {
     ws.on('message', (raw) => {
       try {
         const msg = JSON.parse(raw);
-        // Client can subscribe to specific symbols: { type: 'subscribe', symbols: ['AAPL','TSLA'] }
         if (msg.type === 'subscribe' && Array.isArray(msg.symbols)) {
-          ws.subscribedSymbols = msg.symbols.map((s) => s.toUpperCase());
-          logger.debug(`[WS] ${ip} subscribed to: ${ws.subscribedSymbols.join(', ')}`);
+          ws.subscribedSymbols = msg.symbols.map(s => s.toUpperCase());
         }
       } catch (_) {
         // ignore malformed messages
@@ -37,32 +35,31 @@ const initWebSocket = (httpServer) => {
     ws.on('error', (err) => logger.error(`[WS] Error: ${err.message}`));
   });
 
-  // Broadcast prices every 5 seconds
+  // Broadcast real prices every 5 seconds
   broadcastInterval = setInterval(async () => {
     if (wss.clients.size === 0) return;
 
-    const symbols = TRENDING_SYMBOLS;
-    const prices = await Promise.allSettled(symbols.map((s) => getPrice(s)));
+    try {
+      const prices = await getSandboxPrices();
 
-    const payload = {
-      type: 'price_update',
-      timestamp: new Date().toISOString(),
-      data: prices
-        .map((p, i) => (p.status === 'fulfilled' ? { symbol: symbols[i], ...p.value } : null))
-        .filter(Boolean),
-    };
+      const payload = {
+        type: 'price_update',
+        timestamp: new Date().toISOString(),
+        prices: prices.map(p => ({
+          symbol:       p.symbol,
+          currentPrice: p.price,
+          changePercent: p.changePercent,
+          id:           p.id
+        }))
+      };
 
-    wss.clients.forEach((client) => {
-      if (client.readyState !== WebSocket.OPEN) return;
-
-      // Filter by subscribed symbols if client specified any
-      let data = payload.data;
-      if (client.subscribedSymbols?.length) {
-        data = payload.data.filter((d) => client.subscribedSymbols.includes(d.symbol));
-      }
-
-      client.send(JSON.stringify({ ...payload, data }));
-    });
+      wss.clients.forEach((client) => {
+        if (client.readyState !== WebSocket.OPEN) return;
+        client.send(JSON.stringify(payload));
+      });
+    } catch (err) {
+      logger.warn(`[WS] Price broadcast failed: ${err.message}`);
+    }
   }, 5000);
 
   logger.info('[WS] WebSocket server initialised');
