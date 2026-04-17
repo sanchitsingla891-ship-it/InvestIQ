@@ -296,7 +296,7 @@ function refreshDashboard() {
   if (!get('dash-portfolio')) return;
 
   if (STATE.fearProfile) {
-    const profile = PROFILES[STATE.fearProfile];
+    const profile = PROFILES[STATE.fearProfile] || PROFILES['Beginner'];
     get('dash-greeting').textContent = `Keep going, ${profile.name}`;
     get('dash-profile-tag').textContent = profile.name;
     get('dash-bias-bars').innerHTML = renderBiasBars(STATE.biasScores);
@@ -371,7 +371,7 @@ function refreshDebrief() {
   const get = id => document.getElementById(id);
   if (!get('debrief-bias-bars')) return;
   if (STATE.fearProfile) {
-    const profile = PROFILES[STATE.fearProfile];
+    const profile = PROFILES[STATE.fearProfile] || PROFILES['Beginner'];
     get('debrief-profile-icon').textContent = profile.icon;
     get('debrief-profile-name').textContent = profile.name;
     get('debrief-profile-sub').textContent = profile.desc.substring(0, 85) + '...';
@@ -403,7 +403,7 @@ async function generateAIDebrief() {
   el.innerHTML = '<p style="color:var(--text3);font-style:italic;">Gemini AI is writing your personalized behavioral analysis...</p>';
   try {
     const text = await generateDebrief({
-      profile: STATE.fearProfile ? PROFILES[STATE.fearProfile].name : 'Unknown',
+      profile: (STATE.fearProfile && PROFILES[STATE.fearProfile]) ? PROFILES[STATE.fearProfile].name : 'Unknown',
       biasScores: STATE.biasScores,
       decisions: [...STATE.userDecisions, ...STATE.crashDecisions].slice(-6),
       disciplineScore: STATE.disciplineScore,

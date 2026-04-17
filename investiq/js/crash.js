@@ -203,7 +203,7 @@ async function endCrashReplay() {
   let aiDebriefHTML = `<div class="debrief-text"><p>${verdict}</p></div>`;
   try {
     const aiText = await generateDebrief({
-      profile: STATE.fearProfile ? PROFILES[STATE.fearProfile].name : 'Unknown',
+      profile: (STATE.fearProfile && PROFILES[STATE.fearProfile]) ? PROFILES[STATE.fearProfile].name : 'Unknown',
       biasScores: STATE.biasScores,
       decisions: crDecisionsLocal,
       disciplineScore: STATE.disciplineScore,

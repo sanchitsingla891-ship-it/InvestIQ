@@ -31,7 +31,17 @@ const PROFILES = {
     name: 'Informed Skeptic',
     icon: '🧭',
     desc: 'You show balanced responses across all bias dimensions. You already think like a long-term investor. InvestIQ will help pressure-test these instincts in real market scenarios.'
-  }
+  },
+  // Backend generated profiles for users who skip the fearless assessment
+  Beginner: {
+    name: 'Beginner',
+    icon: '🌱',
+    desc: 'You are just starting out. Build confidence and find your investing style through simulated experience.'
+  },
+  Balanced: { name: 'Balanced', icon: '⚖️', desc: 'You have a balanced approach to investing.' },
+  Overthinker: { name: 'Overthinker', icon: '🤔', desc: 'You tend to overthink decisions.' },
+  Cautious: { name: 'Cautious', icon: '🛡️', desc: 'You are a cautious investor.' },
+  Aggressive: { name: 'Aggressive', icon: '🦁', desc: 'You lean toward aggressive strategies.' }
 };
 
 // ── STATIC FEAR QUESTIONS (fallback if Gemini is slow) ──

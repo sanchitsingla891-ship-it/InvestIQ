@@ -22,7 +22,7 @@ async function sendChatMessage() {
 
   try {
     const response = await coachChat(msg, {
-      profile: STATE.fearProfile ? PROFILES[STATE.fearProfile].name : 'Unknown',
+      profile: (STATE.fearProfile && PROFILES[STATE.fearProfile]) ? PROFILES[STATE.fearProfile].name : 'Unknown',
       disciplineScore: STATE.disciplineScore
     });
     loadingEl.textContent = response;
